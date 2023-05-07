@@ -1,5 +1,13 @@
 ## 📣 실행방법
 
+### Install
+
+```shell
+$ git clone https://github.com/SWE3002-TEAM13/Backend.git
+$ cd Backend
+$ git checkout develope
+```
+
 ### Setup
 
 ```shell
