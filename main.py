@@ -1,6 +1,5 @@
 from fastapi import FastAPI
 from router import announcement, chat, lend, rent, share, user
-from sqlalchemy.orm import Session
 
 from db import models
 from db.database import engine
