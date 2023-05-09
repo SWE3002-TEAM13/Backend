@@ -1,5 +1,5 @@
 from datetime import datetime
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DateTime, Text
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DateTime, Enum
 from sqlalchemy.orm import relationship
 
 from db.database import Base
@@ -31,8 +31,8 @@ class Post(Base):
     __tablename__ = 'post'
 
     id = Column(Integer, primary_key=True, index=True)
-    type = Column(Integer, nullable=False)
-    status = Column(Integer, nullable=False)
+    type = Column(Enum('rent', 'lend', 'share'), nullable=False)
+    status = Column(Enum('possible', 'progress', 'done'), nullable=False)
     title = Column(String(30), nullable=False)
     price = Column(Integer, nullable=False)
     photo = Column(String(255), nullable=False)
@@ -47,7 +47,6 @@ class Post(Base):
     user = relationship('User', back_populates='post', cascade="all, delete")
     category = relationship('Category', back_populates='post')
     like = relationship('Like', back_populates='post', cascade="all, delete")
-    chatroom = relationship('ChatRoom', back_populates='post', cascade="all, delete")
 
 
 class Category(Base):
@@ -91,11 +90,10 @@ class ChatRoom(Base):
     __tablename__ = 'chatroom'
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey('user.id', ondelete='cascade'), nullable = False)
-    post_id = Column(Integer, ForeignKey('post.id', ondelete='cascade'), nullable = False)
+    sender_id = Column(Integer, ForeignKey('user.id', ondelete='cascade'), nullable = False)
+    receiver_id = Column(Integer, ForeignKey('user.id', ondelete='cascade'), nullable = False)
 
     user = relationship('User', back_populates='chatroom', cascade="all, delete")
-    post = relationship('Post', back_populates='chatroom', cascade="all, delete")
     chatmessage = relationship('ChatMessage', back_populates='chatroom', cascade="all, delete")
 
 class ChatMessage(Base):
