@@ -11,6 +11,12 @@ class UserCreateBase(BaseModel):
     loc: bool
     thumbnail: str
 
+class UserInfoBase(BaseModel):
+    id : int
+    username: str
+    class Config():
+        orm_mode = True
+
 class ProfileBase(BaseModel):
     thumbnail: str
     nickname: str
@@ -18,3 +24,10 @@ class ProfileBase(BaseModel):
     loc_str: str
     class Config():
         orm_mode = True
+
+class ProfileUpdateBase(BaseModel):
+    thumbnail: str
+    loc: bool
+    class Config():
+        orm_mode = True
+

@@ -1,4 +1,5 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Date, Text
+from datetime import datetime
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DateTime, Text
 from sqlalchemy.orm import relationship
 
 from db.database import Base
@@ -36,8 +37,8 @@ class Post(Base):
     photo = Column(String(255), nullable=False)
     content = Column(String(1000), nullable=False)
     like_count = Column(Integer, nullable=False)
-    created_at = Column(Date, nullable=False)
-    updated_at = Column(Date, nullable=False)
+    created_at = Column(DateTime, nullable=False, default=datetime.now())
+    updated_at = Column(DateTime, nullable=False, default=datetime.now())
 
     author_id = Column(Integer, ForeignKey('user.id'), nullable=False)
     category_id = Column(Integer, ForeignKey('category.id'), nullable=False)
@@ -62,7 +63,7 @@ class BlockList(Base):
     id = Column(Integer, primary_key=True, index= True)
     user_id = Column(Integer, ForeignKey('user.id', ondelete='cascade'), nullable = False)
     block_id = Column(Integer, nullable = False)
-    created_at = Column(Date, nullable = False)
+    created_at = Column(DateTime, nullable = False, default=datetime.now())
 
     user = relationship('User', back_populates='blocklist')
 
@@ -94,7 +95,7 @@ class ChatMessage(Base):
     chatroom_id = Column(Integer, ForeignKey('chatroom.id', ondelete='cascade'), nullable = False)
     sender_id = Column(Integer, ForeignKey('user.id', ondelete='cascade'), nullable = False)
     message = Column(String(100), nullable=False)
-    created_at = Column(Date, nullable=False)
+    created_at = Column(DateTime, nullable=False, default=datetime.now())
 
     chatroom = relationship('ChatRoom', back_populates='chatmessage', cascade="all, delete")
     user = relationship('User', back_populates='chatmessage', cascade="all, delete")
@@ -106,5 +107,5 @@ class Announcement(Base):
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String(30), nullable=False)
     content = Column(String(1000), nullable=False)
-    created_at = Column(Date, nullable=False)
-    updated_at = Column(Date, nullable=False)
+    created_at = Column(DateTime, nullable=False, default=datetime.now())
+    updated_at = Column(DateTime, nullable=False, default=datetime.now())

@@ -22,6 +22,6 @@ def login(request:OAuth2PasswordRequestForm = Depends(), db: Session = Depends(g
                                 detail=f"Incorrect password") 
     
     # generate a JWT token and return
-    access_token = oauth2.create_access_token(data={"sub": user.email})
+    access_token = oauth2.create_access_token(data={"sub": user.username})
 
-    return {"access_token": access_token, "token_type": "bearer", "username": user.username}
+    return {"access_token": access_token, "token_type": "bearer"}
