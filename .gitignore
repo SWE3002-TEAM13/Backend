@@ -3,3 +3,5 @@ venv/
 myvenv/
 .env
 dev.db
+static/images/*
+!static/images/logo.jpg

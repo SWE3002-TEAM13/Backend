@@ -22,6 +22,7 @@ class User(Base):
 
     post = relationship('Post', back_populates='user', cascade="all, delete")
     blocklist = relationship('BlockList', back_populates='user', cascade="all, delete")
+    reportlog = relationship('ReportLog', back_populates='user', cascade="all, delete")
     like = relationship('Like', back_populates='user', cascade="all, delete")
     chatroom = relationship('ChatRoom', back_populates='user', cascade="all, delete")
     chatmessage = relationship('ChatMessage', back_populates='user', cascade="all, delete")
@@ -67,6 +68,15 @@ class BlockList(Base):
 
     user = relationship('User', back_populates='blocklist')
 
+class ReportLog(Base):
+    __tablename__ = 'reportlog'
+
+    id = Column(Integer, primary_key=True, index=True)
+    
+    user_id = Column(Integer, ForeignKey('user.id', ondelete='cascade'), nullable = False)
+    report_id = Column(Integer, nullable = False)
+
+    user = relationship('User', back_populates='reportlog')
 class Like(Base):
     __tablename__ = 'like'
 

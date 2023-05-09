@@ -20,7 +20,13 @@ def login(request:OAuth2PasswordRequestForm = Depends(), db: Session = Depends(g
     if not Hash.verify(user.password, request.password):
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                                 detail=f"Incorrect password") 
+    if user.is_ban:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                        detail=f"User is Banned!")
     
+    # if not user.is_activate:
+    #     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+    #                     detail=f"Verify Email First!")            
     # generate a JWT token and return
     access_token = oauth2.create_access_token(data={"sub": user.username})
 
