@@ -91,7 +91,7 @@ class ChatRoom(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     sender_id = Column(Integer, ForeignKey('user.id', ondelete='cascade'), nullable = False)
-    receiver_id = Column(Integer, ForeignKey('user.id', ondelete='cascade'), nullable = False)
+    receiver_id = Column(Integer, nullable = False)
 
     user = relationship('User', back_populates='chatroom', cascade="all, delete")
     chatmessage = relationship('ChatMessage', back_populates='chatroom', cascade="all, delete")

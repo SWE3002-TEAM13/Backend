@@ -1,9 +1,14 @@
+import os
 import re
+import smtplib
+from dotenv import load_dotenv
 from sqlalchemy.orm.session import Session
 from db.hash import Hash
 from schemas import UserCreateBase, ProfileUpdateBase, UserInfoBase
 from db.models import BlockList, Like, Post, ReportLog, User
 from fastapi import HTTPException, status
+
+
 
 def register(request: UserCreateBase, db: Session):
     
@@ -11,31 +16,31 @@ def register(request: UserCreateBase, db: Session):
     email = db.query(User).filter(User.email == request.email).first()
     nickname = db.query(User).filter(User.nickname == request.nickname).first()
     
-    if not re.match("^[a-zA-Z0-9_]{5,20}$", request.username):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-                            detail="Username must be composed of alphabet, number or underscore, and length must be between 5 and 20.")
+    # if not re.match("^[a-zA-Z0-9_]{5,20}$", request.username):
+    #     raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+    #                         detail="Username must be composed of alphabet, number or underscore, and length must be between 5 and 20.")
     
-    if len(request.password) < 8 or request.password.isnumeric():
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, 
-            detail=f"Invalid Password Format!")
+    # if len(request.password) < 8 or request.password.isnumeric():
+    #     raise HTTPException(status_code=status.HTTP_409_CONFLICT, 
+    #         detail=f"Invalid Password Format!")
     
-    if not (request.email.endswith('@g.skku.edu') or request.email.endswith('@skku.edu')):
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, 
-            detail=f"Email must end with @g.skku.edu or @skku.edu!")
+    # if not (request.email.endswith('@g.skku.edu') or request.email.endswith('@skku.edu')):
+    #     raise HTTPException(status_code=status.HTTP_409_CONFLICT, 
+    #         detail=f"Email must end with @g.skku.edu or @skku.edu!")
         
-    if len(request.nickname) > 10:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, 
-            detail=f"nickname must be less than 10 characters!")
+    # if len(request.nickname) > 10:
+    #     raise HTTPException(status_code=status.HTTP_409_CONFLICT, 
+    #         detail=f"nickname must be less than 10 characters!")
 
-    if user:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, 
-            detail=f"Username Exist!")
-    if email:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, 
-            detail=f"Email Exist!")
-    if nickname:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, 
-            detail=f"Nickname Exist!")
+    # if user:
+    #     raise HTTPException(status_code=status.HTTP_409_CONFLICT, 
+    #         detail=f"Username Exist!")
+    # if email:
+    #     raise HTTPException(status_code=status.HTTP_409_CONFLICT, 
+    #         detail=f"Email Exist!")
+    # if nickname:
+    #     raise HTTPException(status_code=status.HTTP_409_CONFLICT, 
+    #         detail=f"Nickname Exist!")
 
     user = User(
         username = request.username,
@@ -46,10 +51,33 @@ def register(request: UserCreateBase, db: Session):
         thumbnail = request.thumbnail
     )
         
+
     db.add(user)
     db.commit()
     db.refresh(user)
+
     return user
+
+def activateUser(token: str, username: str, db: Session):
+
+    user = db.query(User).filter(User.username == username)
+
+    if not user.first():
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"Not Valid User")
+
+    if not Hash.verify(token, user.first().email):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"Invalid Token")
+
+    if user.first().is_activate:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"Token Expired")
+    
+    user.update({"is_activate" : True})
+    db.commit()
+
+    return user.first()
 
 def getUser(id: int, db: Session):
     user = db.query(User).filter(User.id == id).first()
