@@ -16,31 +16,31 @@ def register(request: UserCreateBase, db: Session):
     email = db.query(User).filter(User.email == request.email).first()
     nickname = db.query(User).filter(User.nickname == request.nickname).first()
     
-    # if not re.match("^[a-zA-Z0-9_]{5,20}$", request.username):
-    #     raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-    #                         detail="Username must be composed of alphabet, number or underscore, and length must be between 5 and 20.")
+    if not re.match("^[a-zA-Z0-9_]{5,20}$", request.username):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="Username must be composed of alphabet, number or underscore, and length must be between 5 and 20.")
     
-    # if len(request.password) < 8 or request.password.isnumeric():
-    #     raise HTTPException(status_code=status.HTTP_409_CONFLICT, 
-    #         detail=f"Invalid Password Format!")
+    if len(request.password) < 8 or request.password.isnumeric():
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, 
+            detail=f"Invalid Password Format!")
     
-    # if not (request.email.endswith('@g.skku.edu') or request.email.endswith('@skku.edu')):
-    #     raise HTTPException(status_code=status.HTTP_409_CONFLICT, 
-    #         detail=f"Email must end with @g.skku.edu or @skku.edu!")
+    if not (request.email.endswith('@g.skku.edu') or request.email.endswith('@skku.edu')):
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, 
+            detail=f"Email must end with @g.skku.edu or @skku.edu!")
         
-    # if len(request.nickname) > 10:
-    #     raise HTTPException(status_code=status.HTTP_409_CONFLICT, 
-    #         detail=f"nickname must be less than 10 characters!")
+    if len(request.nickname) > 10:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, 
+            detail=f"nickname must be less than 10 characters!")
 
-    # if user:
-    #     raise HTTPException(status_code=status.HTTP_409_CONFLICT, 
-    #         detail=f"Username Exist!")
-    # if email:
-    #     raise HTTPException(status_code=status.HTTP_409_CONFLICT, 
-    #         detail=f"Email Exist!")
-    # if nickname:
-    #     raise HTTPException(status_code=status.HTTP_409_CONFLICT, 
-    #         detail=f"Nickname Exist!")
+    if user:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, 
+            detail=f"Username Exist!")
+    if email:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, 
+            detail=f"Email Exist!")
+    if nickname:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, 
+            detail=f"Nickname Exist!")
 
     user = User(
         username = request.username,
