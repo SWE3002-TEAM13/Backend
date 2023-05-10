@@ -7,7 +7,7 @@ from typing import Optional
 from dotenv import load_dotenv
 from auth.oauth2 import get_current_user
 from db.database import get_db
-from fastapi import APIRouter, BackgroundTasks, Depends, UploadFile, File, Form, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, Depends, Request, UploadFile, File, Form, HTTPException, status
 from db.hash import Hash
 from schemas import BlockUserDisplay, MyProfileBase, OtherProfileBase, UserCreateBase, ProfileUpdateBase, UserInfoBase
 from sqlalchemy.orm import Session
@@ -25,18 +25,18 @@ IMG_DIR = os.path.join(BASE_DIR, '../static/images')
 
 load_dotenv()
 
-async def send_email(to_email, username, verification_token):
+async def send_email(to_email, username, base_url, verification_token):
     from_email = os.getenv("MAIL_USERNAME")
     app_password = os.getenv("MAIL_PASSWORD")
 
 
     msg = MIMEMultipart()
-    body = f'<html><body><p>Please click the following link to verify your account:\
-             <a>localhost:8000/verify?token={verification_token}&username={username}</a></p></body></html>'
+    body = f'<html><body><p>해당 링크를 눌러 회원가입을 완료하세요!:\
+             <a href="{base_url}verify?token={verification_token}&username={username}">{base_url}verify?token={verification_token}&username={username}</a></p></body></html>'
 
     msg['From'] = from_email
     msg['To'] = to_email
-    msg['Subject'] = 'Verify your account [성균:나누Re]'
+    msg['Subject'] = '회원가입 인증 메일 [성균:나누Re]'
     msg.attach(MIMEText(body, 'html'))
 
     smtp_server = 'smtp.gmail.com'
@@ -49,8 +49,8 @@ async def send_email(to_email, username, verification_token):
     smtpObj.sendmail(from_email, to_email, text)
     smtpObj.quit()
 
-async def send_verification_email(user_email, verification_token, username, background_tasks: BackgroundTasks):
-    background_tasks.add_task(send_email, user_email, username,  verification_token)
+async def send_verification_email(user_email, verification_token, username, base_url, background_tasks: BackgroundTasks):
+    background_tasks.add_task(send_email, user_email, username, base_url, verification_token)
 
 
 def thumbnail_upload(thumbnail: UploadFile = File(...)):
@@ -64,7 +64,7 @@ def thumbnail_upload(thumbnail: UploadFile = File(...)):
         return os.path.join(IMG_DIR, "logo.jpg")
 
 @router.post('/register')
-async def register(background_tasks: BackgroundTasks, username: str = Form(...), password: str = Form(...), email: str = Form(...), nickname: str = Form(...),
+async def register(background_tasks: BackgroundTasks, request: Request, username: str = Form(...), password: str = Form(...), email: str = Form(...), nickname: str = Form(...),
             loc: bool = Form(...), thumbnail: Optional[UploadFile] = None, db: Session = Depends(get_db)):
     
     path = thumbnail_upload(thumbnail)
@@ -73,7 +73,7 @@ async def register(background_tasks: BackgroundTasks, username: str = Form(...),
 
     db_user.register(user, db)
 
-    await send_verification_email(user.email, Hash.bcrypt(user.email), user.username, background_tasks)
+    await send_verification_email(user.email, Hash.bcrypt(user.email), user.username, request.base_url, background_tasks)
 
 @router.get('/profile/me', response_model = MyProfileBase)
 def getProfile(current_user: UserInfoBase = Depends(get_current_user), db: Session = Depends(get_db)):

@@ -35,4 +35,6 @@ def login(request:OAuth2PasswordRequestForm = Depends(), db: Session = Depends(g
 @router.get('/verify')
 def verify(token: str, username: str, db: Session = Depends(get_db)):
 
-    return db_user.activateUser(token, username, db)
+    user = db_user.activateUser(token, username, db)
+
+    return user.id
