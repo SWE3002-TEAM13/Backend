@@ -59,6 +59,18 @@ class CategoryEnum(str, Enum):
     Food = "Food"
     Other = "Other"
 
+class PostUpdate(BaseModel):
+    type: PostType
+    title : str
+    status : PostStatusEnum
+    price : int
+    photo : str
+    content : str
+    updated_at : datetime
+    category: CategoryEnum
+    class Config():
+        orm_mode = True
+
 class PostDisplay(BaseModel):
     type: PostType
     title : str
@@ -74,6 +86,13 @@ class PostDisplay(BaseModel):
     class Config():
         orm_mode = True
        
+class AnnounceUpdate(BaseModel):
+    title: str
+    content: str
+    updated_at: datetime
+    class Config():
+        orm_mode = True
+        
 class AnnounceDisplay(BaseModel):
     title: str
     content: str

@@ -1,6 +1,6 @@
 from fastapi import HTTPException
 from sqlalchemy.orm.session import Session
-from schemas import PostDisplay, UserInfoBase
+from schemas import PostDisplay, UserInfoBase, PostUpdate
 from db.models import Post, User, Like
 from fastapi import HTTPException, status
 
@@ -37,7 +37,7 @@ def register_post(post: PostDisplay, current_user: UserInfoBase, db:Session):
     db.refresh(new_post)
     return new_post
 
-def update_post(id: int, post: PostDisplay, current_user: UserInfoBase, db:Session):
+def update_post(id: int, post: PostUpdate, current_user: UserInfoBase, db:Session):
     user = db.query(User).filter(User.id == current_user.id).first()
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
