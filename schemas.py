@@ -1,6 +1,7 @@
 from typing import Dict, List, Optional
 from datetime import date, datetime
 from pydantic import BaseModel
+from enum import Enum
 
 # Schema 작성
 class UserCreateBase(BaseModel):
@@ -39,9 +40,29 @@ class BlockUserDisplay(BaseModel):
     created_at : datetime
     class Config():
         orm_mode = True
+        
+class PostType(str, Enum):
+    rent = "rent"
+    lend = "lend"
+    share = "share"
+    
+class PostStatusEnum(str, Enum):
+    possible = "possible"
+    progress = "progress"
+    done = "done"
+
+class CategoryEnum(str, Enum):
+    Electronics = "Electronics"
+    Clothes = "Clothes"
+    Book = "Book"
+    Furniture = "Furniture"
+    Food = "Food"
+    Other = "Other"
+
 class PostDisplay(BaseModel):
+    type: PostType
     title : str
-    status : int
+    status : PostStatusEnum
     price : int
     photo : str
     content : str
@@ -49,8 +70,18 @@ class PostDisplay(BaseModel):
     created_at : datetime
     updated_at : datetime
     nickname : str
+    category: CategoryEnum
     class Config():
         orm_mode = True
+       
+class AnnounceDisplay(BaseModel):
+    title: str
+    content: str
+    created_at: datetime
+    updated_at: datetime
+    class Config():
+        orm_mode = True
+        
 class MyProfileBase(BaseModel):
     profile : ProfileDisplay
     blocklist : List[BlockUserDisplay] = []

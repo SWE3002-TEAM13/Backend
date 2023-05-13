@@ -31,8 +31,8 @@ class Post(Base):
     __tablename__ = 'post'
 
     id = Column(Integer, primary_key=True, index=True)
-    type = Column(Enum('rent', 'lend', 'share'), nullable=False)
-    status = Column(Enum('possible', 'progress', 'done'), nullable=False)
+    type = Column(Enum("rent","lend","share"), nullable=False)
+    status = Column(Enum("possible","progress","done"), nullable=False)
     title = Column(String(30), nullable=False)
     price = Column(Integer, nullable=False)
     photo = Column(String(255), nullable=False)
@@ -40,22 +40,21 @@ class Post(Base):
     like_count = Column(Integer, nullable=False)
     created_at = Column(DateTime, nullable=False, default=datetime.now())
     updated_at = Column(DateTime, nullable=False, default=datetime.now())
-
+    category = Column(Enum("Electronics","Clothes","Book","Furniture","Food","Other"), nullable=False)
+    
     author_id = Column(Integer, ForeignKey('user.id'), nullable=False)
-    category_id = Column(Integer, ForeignKey('category.id'), nullable=False)
 
     user = relationship('User', back_populates='post', cascade="all, delete")
-    category = relationship('Category', back_populates='post')
+    # category = relationship('Category', back_populates='post')
     like = relationship('Like', back_populates='post', cascade="all, delete")
 
+# class Category(Base):
+#     __tablename__ = 'category'
 
-class Category(Base):
-    __tablename__ = 'category'
+#     id = Column(Integer, primary_key= True, index= True)
+#     name = Column(String(30), nullable=False)
 
-    id = Column(Integer, primary_key= True, index= True)
-    name = Column(String(30), nullable=False)
-
-    post = relationship('Post', back_populates='category')
+#     post = relationship('Post', back_populates='category')
 
 class BlockList(Base):
     __tablename__ = 'blocklist'
