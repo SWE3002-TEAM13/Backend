@@ -1,8 +1,6 @@
-from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, Depends, WebSocket
 from auth.oauth2 import get_current_user
 from db.database import get_db
-
-from db.models import ChatMessage, ChatRoom, Post
 from sqlalchemy.orm.session import Session
 from db import db_chat
 from schemas import UserInfoBase
@@ -22,22 +20,30 @@ def newChatRoom(user_id: int, db: Session = Depends(get_db),
 @router.get("")
 def getChatRoom(current_user: UserInfoBase = Depends(get_current_user), db: Session = Depends(get_db)):
 
-    return db_chat.getChatRoom(current_user.id, db)
+    return db_chat.getChatRoomList(current_user.id, db)
 
 
-@router.get("/chatroom/{id}")
-def getChatRoomInfo(id: int, db: Session = Depends(get_db), current_user: UserInfoBase = Depends(get_current_user)):
+@router.get("/chatroom/{chatroom_id}")
+def getChatRoomInfo(chatroom_id: int, db: Session = Depends(get_db), current_user: UserInfoBase = Depends(get_current_user)):
 
-    return db_chat.getChatRoomMessage(id, db)
+    return db_chat.getChatRoomMessage(chatroom_id, current_user.id, db)
 
-@router.websocket("/ws/{room_id}")
-async def chat_room(websocket: WebSocket, room_id: int, db: Session = Depends(get_db),
-                    current_user: UserInfoBase = Depends(get_current_user)):
+chat_client = []
+
+@router.websocket("/ws/{chatroom_id}")
+async def sendChatMessage(websocket: WebSocket, chatroom_id: int, db: Session = Depends(get_db),
+                         current_user: UserInfoBase = Depends(get_current_user)):
+    
+    valid = db_chat.checkChatRoom(chatroom_id, current_user.id, db)
+    
+    if valid != "valid": return "Non Valid!"
+    
     await websocket.accept()
+    chat_client.append(websocket)
     while True:
         message = await websocket.receive_text()
-        db_chat.createChatMessage(room_id, current_user.id, message, db)
+        if not message: continue
+        db_chat.createChatMessage(chatroom_id, current_user.id, message, db)
 
-        # process the message and send it back to the user
-        response = f"{current_user.id}: {message}"
-        await websocket.send_text(response)
+        for client in chat_client:
+            await client.send_text(message)
