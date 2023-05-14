@@ -14,6 +14,7 @@ def get_post(type: str, search: str, db:Session):
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                     detail=f"Not Exist Post")
+        
     return post
 
 def register_post(post: PostDisplay, current_user: UserInfoBase, db:Session):

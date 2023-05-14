@@ -60,6 +60,7 @@ def getPostInfo(id: int, db: Session = Depends(get_db)):
     if not postinfo:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                     detail=f"Not Exist Post")
+        
     return postinfo
 
 
