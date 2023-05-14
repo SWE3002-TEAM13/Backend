@@ -1,6 +1,6 @@
 from fastapi import HTTPException
 from sqlalchemy.orm.session import Session
-from schemas import AnnounceDisplay, UserInfoBase
+from schemas import AnnounceDisplay, UserInfoBase, AnnounceUpdate
 from db.models import Announcement, User
 from fastapi import HTTPException, status
 
@@ -16,7 +16,7 @@ def register_announce(announce: AnnounceDisplay, db:Session):
     db.refresh(new_announce)
     return new_announce
 
-def update_announce(id: int, announce: AnnounceDisplay, db:Session):
+def update_announce(id: int, announce: AnnounceUpdate, db:Session):
     db_announce = db.query(Announcement).filter(Announcement.id == id).first()
     if not db_announce:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,

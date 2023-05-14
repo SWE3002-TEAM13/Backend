@@ -3,6 +3,7 @@ import shutil
 from datetime import datetime
 import smtplib
 from enum import Enum
+from fastapi import HTTPException, status
 
 from sqlalchemy.orm import Session
 from auth.oauth2 import get_current_user
@@ -56,6 +57,9 @@ def get_post_list(type: str, search: Optional[str] = None, db: Session = Depends
 @router.get('/{id}')
 def getPostInfo(id: int, db: Session = Depends(get_db)):
     postinfo = db.query(Post).filter(Post.id == id).first()
+    if not postinfo:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"Not Exist Post")
     return postinfo
 
 

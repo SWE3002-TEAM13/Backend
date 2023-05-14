@@ -11,7 +11,9 @@ def get_post(type: str, search: str, db:Session):
             .filter(Post.title.ilike(search) | Post.content.ilike(search)).all()
     else:
         post = db.query(Post).filter(Post.type == type).all()
-        
+    if not post:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"Not Exist Post")
     return post
 
 def register_post(post: PostDisplay, current_user: UserInfoBase, db:Session):
