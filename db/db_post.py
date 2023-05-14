@@ -76,7 +76,7 @@ def like_post(post_id: int, current_user: UserInfoBase, db: Session):
     if not db_post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                     detail=f"Not Exist Post")
-    like_exist = db_post.like_count = db.query(Like).filter(Like.post_id == post_id).filter(Like.user_id == current_user.id)
+    like_exist = db.query(Like).filter(Like.post_id == post_id).filter(Like.user_id == current_user.id)
     if like_exist.first():
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                     detail=f"Already Like Post")
@@ -96,7 +96,7 @@ def delete_like_post(post_id: int, current_user: UserInfoBase, db: Session):
     if not db_post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                     detail=f"Not Exist Post")
-    like_exist = db_post.like_count = db.query(Like).filter(Like.post_id == post_id).filter(Like.user_id == current_user.id)
+    like_exist = db.query(Like).filter(Like.post_id == post_id).filter(Like.user_id == current_user.id)
     if not like_exist.first():
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                     detail=f"Not Exist Like")
@@ -106,5 +106,3 @@ def delete_like_post(post_id: int, current_user: UserInfoBase, db: Session):
     
     like_exist.delete()
     db.commit()     
-     
-    
