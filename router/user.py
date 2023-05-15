@@ -106,9 +106,9 @@ def getProfileInfo(id: int, db: Session = Depends(get_db)):
     if profile.loc: profile.loc_str="자연과학캠퍼스(율전)"
     else: profile.loc_str="인문사회과학캠퍼스(명륜)"
 
-    rent_list = db.user.getRentList(id, db)
-    lend_list = db.user.getLendList(id, db)
-    share_list = db.user.getShareList(id, db)
+    rent_list = db_user.getRentList(id, db)
+    lend_list = db_user.getLendList(id, db)
+    share_list = db_user.getShareList(id, db)
     
     return {"profile" : profile, "rentlist": rent_list, "lendlist" : lend_list, "share_list": share_list}
 

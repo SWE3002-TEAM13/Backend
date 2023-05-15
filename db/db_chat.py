@@ -50,6 +50,10 @@ def createChatRoom(receiver: int, sender: int, db: Session):
     recv_user = db.query(User).filter(User.id == receiver).first()
     send_user = db.query(User).filter(User.id == sender).first()
 
+    if recv_user == send_user:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail=f"You can't talk yourself!")
+
     chatroom1 = db.query(ChatRoom).filter(ChatRoom.receiver_id == receiver, ChatRoom.sender_id == sender).first()
     chatroom2 = db.query(ChatRoom).filter(ChatRoom.receiver_id == sender, ChatRoom.sender_id == receiver).first()
 
