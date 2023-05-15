@@ -10,7 +10,7 @@ from auth.oauth2 import get_current_user
 from db.database import get_db
 from fastapi import APIRouter, Depends, Form, UploadFile, File
 from typing import Optional
-from db.models import Post
+from db.models import Post, User
 from schemas import UserInfoBase, PostDisplay, PostUpdate
 from db import db_post
 
@@ -43,7 +43,7 @@ SERVER_IMG_DIR = os.path.join('http://localhost:8000/', 'images/')
 
 def photo_upload(photo: UploadFile = File(...)):
     if photo:
-        new_name = datetime.now().strftime('%Y%m%d%H%M%S') + thumbnail.filename
+        new_name = datetime.now().strftime('%Y%m%d%H%M%S') + photo.filename
         dir_path = os.path.join(IMG_DIR, new_name)
         server_path = os.path.join(SERVER_IMG_DIR, new_name)
         with open(dir_path, 'w+b') as buffer:
@@ -54,7 +54,13 @@ def photo_upload(photo: UploadFile = File(...)):
 
 @router.get('/')
 def get_post_list(type: str, search: Optional[str] = None, db: Session = Depends(get_db)):
-    return db_post.get_post(type, search, db)
+    posts = db_post.get_post(type, search, db)
+    post_list_display = []
+    for post, nickname in posts:
+        post.nickname = nickname
+        post_list_display.append(post)
+
+    return post_list_display
 
 @router.get('/{id}')
 def getPostInfo(id: int, db: Session = Depends(get_db)):
@@ -62,7 +68,9 @@ def getPostInfo(id: int, db: Session = Depends(get_db)):
     if not postinfo:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                     detail=f"Not Exist Post")
-        
+    user = db.query(User).filter(User.id == postinfo.author_id).first()
+    
+    postinfo.nickname = user.nickname
     return postinfo
 
 

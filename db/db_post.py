@@ -7,14 +7,14 @@ from fastapi import HTTPException, status
 def get_post(type: str, search: str, db:Session):
     if search:
         search = '%%{}%%'.format(search)
-        post = db.query(Post).filter(Post.type == type)\
+        post = db.query(Post, User.nickname).join(User, User.id == Post.author_id).filter(Post.type == type)\
             .filter(Post.title.ilike(search) | Post.content.ilike(search)).all()
     else:
-        post = db.query(Post).filter(Post.type == type).all()
+        post = db.query(Post, User.nickname).join(User, User.id == Post.author_id).filter(Post.type == type).all()
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                     detail=f"Not Exist Post")
-        
+
     return post
 
 def register_post(post: PostDisplay, current_user: UserInfoBase, db:Session):
