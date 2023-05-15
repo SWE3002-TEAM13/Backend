@@ -22,6 +22,7 @@ router = APIRouter(
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 IMG_DIR = os.path.join(BASE_DIR, '../static/images')
+SERVER_IMG_DIR = os.path.join('http://localhost:8000/', 'images/')
 
 load_dotenv()
 
@@ -56,12 +57,13 @@ async def send_verification_email(user_email, verification_token, username, base
 def thumbnail_upload(thumbnail: UploadFile = File(...)):
     if thumbnail:
         new_name = datetime.now().strftime('%Y%m%d%H%M%S') + thumbnail.filename
-        path = os.path.join(IMG_DIR, new_name)
-        with open(path, 'w+b') as buffer:
+        dir_path = os.path.join(IMG_DIR, new_name)
+        server_path = os.path.join(SERVER_IMG_DIR, new_name)
+        with open(dir_path, 'w+b') as buffer:
             shutil.copyfileobj(thumbnail.file, buffer)
-        return path
+        return server_path
     else:
-        return os.path.join(IMG_DIR, "logo.jpg")
+        return os.path.join(SERVER_IMG_DIR, "logo.jpg")
 
 @router.post('/register')
 async def register(background_tasks: BackgroundTasks, request: Request, username: str = Form(...), password: str = Form(...), email: str = Form(...), nickname: str = Form(...),

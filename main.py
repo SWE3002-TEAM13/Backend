@@ -17,7 +17,7 @@ app.include_router(user.router)
 
 models.Base.metadata.create_all(bind=engine)
 
-app.mount('/static/images', StaticFiles(directory="static/images"))
+app.mount('/images', StaticFiles(directory="static/images"))
 
 origins = [
     "http://localhost:3000"

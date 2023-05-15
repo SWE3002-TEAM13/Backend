@@ -39,16 +39,18 @@ class CategoryEnum(str, Enum):
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 IMG_DIR = os.path.join(BASE_DIR, '../static/images')
+SERVER_IMG_DIR = os.path.join('http://localhost:8000/', 'images/')
 
-def photo_upload(thumbnail: UploadFile = File(...)):
-    if thumbnail:
+def photo_upload(photo: UploadFile = File(...)):
+    if photo:
         new_name = datetime.now().strftime('%Y%m%d%H%M%S') + thumbnail.filename
-        path = os.path.join(IMG_DIR, new_name)
-        with open(path, 'w+b') as buffer:
-            shutil.copyfileobj(thumbnail.file, buffer)
-        return path
+        dir_path = os.path.join(IMG_DIR, new_name)
+        server_path = os.path.join(SERVER_IMG_DIR, new_name)
+        with open(dir_path, 'w+b') as buffer:
+            shutil.copyfileobj(photo.file, buffer)
+        return server_path
     else:
-        return os.path.join(IMG_DIR, "logo.jpg")
+        return os.path.join(SERVER_IMG_DIR, "logo.jpg")
 
 @router.get('/')
 def get_post_list(type: str, search: Optional[str] = None, db: Session = Depends(get_db)):
