@@ -1,21 +1,36 @@
+from typing import Optional
 from fastapi import HTTPException
 from sqlalchemy.orm.session import Session
 from schemas import PostDisplay, UserInfoBase, PostUpdate
-from db.models import Post, User, Like
+from db.models import BlockList, Post, User, Like
 from fastapi import HTTPException, status
 
-def get_post(type: str, search: str, db:Session):
+def get_post(type: str, search: str, current_user: Optional[UserInfoBase] | None, db:Session):
     if search:
         search = '%%{}%%'.format(search)
-        post = db.query(Post).filter(Post.type == type)\
+        postlist = db.query(Post).filter(Post.type == type)\
             .filter(Post.title.ilike(search) | Post.content.ilike(search)).all()
     else:
-        post = db.query(Post).filter(Post.type == type).all()
-    if not post:
+        postlist = db.query(Post).filter(Post.type == type).all()
+    if not postlist:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                     detail=f"Not Exist Post")
-        
-    return post
+
+    for post in postlist:
+        author = db.query(User).filter(post.author_id == User.id).first()
+        post.nickname = author.nickname
+
+    if current_user:
+        for post in postlist:
+            isliked = db.query(Like).filter(Like.post_id == post.id, Like.user_id == current_user.id).first()
+            if not isliked: post.islike = False
+            else: post.islike = True
+        postdisplay = []
+        for post in postlist:
+            isblocked = db.query(BlockList).filter(BlockList.block_id == post.author_id, BlockList.user_id == current_user.id).first()
+            if not isblocked: postdisplay.append(post)
+            
+    return postdisplay
 
 def register_post(post: PostDisplay, current_user: UserInfoBase, db:Session):
     user = db.query(User).filter(User.nickname == current_user.nickname).first()
@@ -34,16 +49,15 @@ def register_post(post: PostDisplay, current_user: UserInfoBase, db:Session):
                   category = post.category,
                   author_id = current_user.id)
                   
-    
     db.add(new_post)
     db.commit()
     db.refresh(new_post)
     return new_post
 
 def update_post(id: int, post: PostUpdate, current_user: UserInfoBase, db:Session):
-    user = db.query(User).filter(User.id == current_user.id).first()
-    if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+    db_post = db.query(Post).filter(Post.author_id == current_user.id).first()
+    if not db_post:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                     detail=f"Not Auth User")
     db_post = db.query(Post).filter(Post.id == id).first()
     if not db_post:
@@ -61,9 +75,9 @@ def update_post(id: int, post: PostUpdate, current_user: UserInfoBase, db:Sessio
     db.commit()
     
 def delete_post(id: int, current_user: UserInfoBase, db: Session):
-    user = db.query(User).filter(User.id == current_user.id).first()
-    if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+    db_post = db.query(Post).filter(Post.author_id == current_user.id).first()
+    if not db_post:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                     detail=f"Not Auth User")
         
     delete_post = db.query(Post).filter(Post.type == 'lend').filter(Post.id == id)
@@ -79,6 +93,11 @@ def like_post(post_id: int, current_user: UserInfoBase, db: Session):
     if not db_post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                     detail=f"Not Exist Post")
+    
+    if db_post.author_id == current_user.id:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail=f"You can't like your post!")
+        
     like_exist = db.query(Like).filter(Like.post_id == post_id).filter(Like.user_id == current_user.id)
     if like_exist.first():
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
@@ -99,6 +118,12 @@ def delete_like_post(post_id: int, current_user: UserInfoBase, db: Session):
     if not db_post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                     detail=f"Not Exist Post")
+        
+    db_post = db.query(Post).filter(Post.author_id == current_user.id).first()
+    if not db_post:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail=f"Not Auth User")
+        
     like_exist = db.query(Like).filter(Like.post_id == post_id).filter(Like.user_id == current_user.id)
     if not like_exist.first():
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,

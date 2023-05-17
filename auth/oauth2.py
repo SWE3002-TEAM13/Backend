@@ -13,7 +13,7 @@ from db import db_user
 load_dotenv()
 
 # tokenUrl = Where can fetch token
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login", auto_error = False)
 
 # configuration
 # SECRET VALUES
@@ -30,6 +30,8 @@ def create_access_token(data: dict):
 
 # Verify Token
 def verify_token(token: str, credentials_exception, db : Session):
+    if not token:
+        raise credentials_exception
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
@@ -54,3 +56,14 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     )
     return verify_token(token, credentials_exception, db)
 
+def get_current_user_otherwise(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    
+    if not token:
+        return None
+    
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    return verify_token(token, credentials_exception, db)
