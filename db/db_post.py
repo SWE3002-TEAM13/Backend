@@ -32,6 +32,7 @@ def get_post(type: str, search: str, current_user: Optional[UserInfoBase] | None
             
     return postdisplay
 
+
 def register_post(post: PostDisplay, current_user: UserInfoBase, db:Session):
     user = db.query(User).filter(User.nickname == current_user.nickname).first()
     if not user:

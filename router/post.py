@@ -39,27 +39,35 @@ class CategoryEnum(str, Enum):
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 IMG_DIR = os.path.join(BASE_DIR, '../static/images')
+SERVER_IMG_DIR = os.path.join('http://localhost:8000/', 'images/')
 
-def photo_upload(thumbnail: UploadFile = File(...)):
-    if thumbnail:
-        new_name = datetime.now().strftime('%Y%m%d%H%M%S') + thumbnail.filename
-        path = os.path.join(IMG_DIR, new_name)
-        with open(path, 'w+b') as buffer:
-            shutil.copyfileobj(thumbnail.file, buffer)
-        return path
+def photo_upload(photo: UploadFile = File(...)):
+    if photo:
+        new_name = datetime.now().strftime('%Y%m%d%H%M%S') + photo.filename
+        dir_path = os.path.join(IMG_DIR, new_name)
+        server_path = os.path.join(SERVER_IMG_DIR, new_name)
+        with open(dir_path, 'w+b') as buffer:
+            shutil.copyfileobj(photo.file, buffer)
+        return server_path
     else:
-        return os.path.join(IMG_DIR, "logo.jpg")
+        return os.path.join(SERVER_IMG_DIR, "logo.jpg")
 
 @router.get('/')
-def get_post_list(type: str, search: Optional[str] = None, current_user: Optional[UserInfoBase] | None = Depends(get_current_user_otherwise), db: Session = Depends(get_db)):
-    return db_post.get_post(type, search, current_user, db)
+def get_post_list(type: str, search: Optional[str] = None, db: Session = Depends(get_db)):
+    posts = db_post.get_post(type, search, db)
+    post_list_display = []
+    for post, nickname in posts:
+        post.nickname = nickname
+        post_list_display.append(post)
 
+    return post_list_display
 @router.get('/{id}')
 def getPostInfo(id: int, db: Session = Depends(get_db)):
     postinfo = db.query(Post).filter(Post.id == id).first()
     if not postinfo:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                     detail=f"Not Exist Post")
+
     author = db.query(User).filter(postinfo.author_id == User.id).first()
     postinfo.nickname = author.nickname
     return postinfo
