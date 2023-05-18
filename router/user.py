@@ -100,6 +100,11 @@ def getProfile(current_user: UserInfoBase = Depends(get_current_user), db: Sessi
     
     return {"profile" : profile, "blocklist": block_list_display, "likelist" : like_list,  "rentlist": rent_list, "lendlist" : lend_list, "share_list": share_list}
 
+@router.get('/me')
+def getMyUserId(current_user: UserInfoBase = Depends(get_current_user)):
+    
+    return {"id" : current_user.id, "nickname" :current_user.nickname}
+    
 
 @router.get('/profile/{id}', response_model= OtherProfileBase)
 def getProfileInfo(id: int, db: Session = Depends(get_db)):
