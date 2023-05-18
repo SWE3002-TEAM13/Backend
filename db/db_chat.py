@@ -79,8 +79,8 @@ def createChatMessage(chatroom_id : int, sender_id : int, message : str, db : Se
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
             detail=f"User not found")
 
-    chat_message = ChatMessage(chatroom_id=chatroom_id, sender_id=sender_id, message=message, created_at = datetime.now())
-    db.add(chat_message)
+    chat = ChatMessage(chatroom_id=chatroom_id, sender_id=sender_id, message=message, created_at = datetime.now())
+    db.add(chat)
     db.commit()
     
     return chat

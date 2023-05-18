@@ -76,8 +76,9 @@ async def sendChatMessage(websocket: WebSocket, chatroom_id: int, token: str | N
             if not message: continue
             message = db_chat.createChatMessage(chatroom_id, user.id, message, db)
             user = db.query(User).filter(User.id == message.sender_id).first()
-            message.sender_profile = {"nickname": user.nickname, "thumbnail": user.thumbnail}
-            await manager.broadcast(json.dumps(message))
+            sender_profile = {"nickname": user.nickname, "thumbnail": user.thumbnail}
+            chat = {"id" : message.id, "chatroom_id" : message.chatroom_id, "sender_id" : message.sender_id, "sender_profile" : sender_profile, "message" : message.message, "created_at" : message.created_at}
+            await manager.broadcast(json.dumps(chat))
             
     except WebSocketDisconnect:
         manager.disconnect(websocket)
