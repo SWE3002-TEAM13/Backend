@@ -42,7 +42,7 @@ def getChatRoomMessage(chatroom_id: int, user_id : int, db: Session):
     for message in chatmessages:
         
         user = db.query(User).filter(User.id == message.sender_id).first()
-        message.profile = {"nickname": user.nickname, "thumbnail": user.thumbnail}
+        message.sender_profile = {"nickname": user.nickname, "thumbnail": user.thumbnail}
 
     return chatmessages
 
@@ -82,6 +82,8 @@ def createChatMessage(chatroom_id : int, sender_id : int, message : str, db : Se
     chat_message = ChatMessage(chatroom_id=chatroom_id, sender_id=sender_id, message=message, created_at = datetime.now())
     db.add(chat_message)
     db.commit()
+    
+    return chat
 
 def checkChatRoom(chatroom_id : int, user_id : int, db : Session):
     
