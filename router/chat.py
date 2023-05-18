@@ -1,3 +1,4 @@
+import json
 from fastapi import APIRouter, Depends, WebSocket, HTTPException, status, WebSocketDisconnect
 from auth.oauth2 import get_current_user, verify_token
 from db.database import get_db
@@ -73,8 +74,8 @@ async def sendChatMessage(websocket: WebSocket, chatroom_id: int, token: str | N
             message = await websocket.receive_text()
             if not message: continue
             db_chat.createChatMessage(chatroom_id, user.id, message, db)
-            await manager.send_personal_message(f'You Wrote : {message}', websocket)
-            await manager.broadcast(f'Client says: {message}')
+            await manager.broadcast(json.dumps({"user": user.id, "message": message}))
+            
     except WebSocketDisconnect:
         manager.disconnect(websocket)
         await manager.broadcast(f"Client left the chat")
