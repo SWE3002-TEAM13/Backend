@@ -1,5 +1,5 @@
-from fastapi import APIRouter, Depends, WebSocket
-from auth.oauth2 import get_current_user
+from fastapi import APIRouter, Depends, WebSocket, HTTPException, status
+from auth.oauth2 import get_current_user, verify_token
 from db.database import get_db
 from sqlalchemy.orm.session import Session
 from db import db_chat
@@ -31,10 +31,21 @@ def getChatRoomInfo(chatroom_id: int, db: Session = Depends(get_db), current_use
 chat_client = []
 
 @router.websocket("/ws/{chatroom_id}")
-async def sendChatMessage(websocket: WebSocket, chatroom_id: int, db: Session = Depends(get_db),
-                         current_user: UserInfoBase = Depends(get_current_user)):
+async def sendChatMessage(websocket: WebSocket, chatroom_id: int, token: str | None, db: Session = Depends(get_db)):
     
-    valid = db_chat.checkChatRoom(chatroom_id, current_user.id, db)
+    if not token:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+        detail=f"Not Auth User")
+    
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    
+    user = verify_token(token, credentials_exception, db)
+    
+    valid = db_chat.checkChatRoom(chatroom_id, user.id, db)
     
     if valid != "valid": return "Non Valid!"
     
@@ -43,7 +54,7 @@ async def sendChatMessage(websocket: WebSocket, chatroom_id: int, db: Session = 
     while True:
         message = await websocket.receive_text()
         if not message: continue
-        db_chat.createChatMessage(chatroom_id, current_user.id, message, db)
+        db_chat.createChatMessage(chatroom_id, user.id, message, db)
 
         for client in chat_client:
             await client.send_text(message)
