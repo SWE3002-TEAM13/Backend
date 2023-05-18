@@ -57,6 +57,16 @@ def get_post_list(type: str, search: Optional[str] = None, current_user = Depend
     posts = db_post.get_post(type, search, current_user, db)
 
     return posts
+
+@router.get('/landing')
+def getLandingPost(current_user = Depends(get_current_user_otherwise), db: Session = Depends(get_db)):
+    rentList = db_post.get_post("rent", "", current_user, db)
+    lendList = db_post.get_post("lend", "", current_user, db)
+    shareList = db_post.get_post("share", "", current_user, db)
+
+    return {"rentList" : rentList[-1:-6:-1], "lendList" : lendList[-1:-6:-1], "shareList" : shareList[-1:-6:-1]}
+
+
 @router.get('/{id}')
 def getPostInfo(id: int, db: Session = Depends(get_db)):
     postinfo = db.query(Post).filter(Post.id == id).first()
