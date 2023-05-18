@@ -40,7 +40,7 @@ class Post(Base):
     like_count = Column(Integer, nullable=False)
     created_at = Column(DateTime, nullable=False, default=datetime.now())
     updated_at = Column(DateTime, nullable=False, default=datetime.now())
-    category = Column(Enum("Electronics","Clothes","Book","Furniture","Food","Other"), nullable=False)
+    category = Column(Enum("Electronics","Clothes","Book","Furniture","Food","Other"), nullable=True)
     
     author_id = Column(Integer, ForeignKey('user.id'), nullable=False)
 
