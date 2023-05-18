@@ -19,7 +19,7 @@ def get_post(type: str, search: str, current_user: Optional[UserInfoBase] | None
     for post in postlist:
         author = db.query(User).filter(post.author_id == User.id).first()
         post.nickname = author.nickname
-
+    postdisplay = postlist
     if current_user:
         for post in postlist:
             isliked = db.query(Like).filter(Like.post_id == post.id, Like.user_id == current_user.id).first()

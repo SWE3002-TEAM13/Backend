@@ -53,14 +53,10 @@ def photo_upload(photo: UploadFile = File(...)):
         return os.path.join(SERVER_IMG_DIR, "logo.jpg")
 
 @router.get('/')
-def get_post_list(type: str, search: Optional[str] = None, db: Session = Depends(get_db)):
-    posts = db_post.get_post(type, search, db)
-    post_list_display = []
-    for post, nickname in posts:
-        post.nickname = nickname
-        post_list_display.append(post)
+def get_post_list(type: str, search: Optional[str] = None, current_user = Depends(get_current_user_otherwise), db: Session = Depends(get_db)):
+    posts = db_post.get_post(type, search, current_user, db)
 
-    return post_list_display
+    return posts
 @router.get('/{id}')
 def getPostInfo(id: int, db: Session = Depends(get_db)):
     postinfo = db.query(Post).filter(Post.id == id).first()
