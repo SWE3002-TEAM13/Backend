@@ -72,6 +72,7 @@ class PostUpdate(BaseModel):
         orm_mode = True
 
 class PostDisplay(BaseModel):
+    id: int
     type: PostType
     title : str
     status : PostStatusEnum

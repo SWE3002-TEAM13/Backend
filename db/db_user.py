@@ -124,6 +124,7 @@ def getRentList(id: int, db: Session):
     for list in rentlist:
         user = db.query(User).filter(User.id == list.id).first()
         list.nickname = user.nickname
+    print(rentlist)
     return rentlist
 
 def getLendList(id: int, db: Session):
