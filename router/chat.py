@@ -82,4 +82,3 @@ async def sendChatMessage(websocket: WebSocket, chatroom_id: int, token: str | N
             
     except WebSocketDisconnect:
         manager.disconnect(websocket)
-        await manager.broadcast(f"Client left the chat")
