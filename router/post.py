@@ -84,8 +84,8 @@ def getPostInfo(id: int, current_user = Depends(get_current_user_otherwise), db:
 
 
 @router.post('/')
-async def register(type: str = Form(...), title: str = Form(...), status: str = Form(...), price: int = Form(...),
-            photo: Optional[UploadFile] = None , content: str = Form(...), category: str = Form(...) ,
+async def register(type: PostType = Form(...), title: str = Form(...), status: PostStatusEnum = Form(...),price: int = Form(...),
+            photo: Optional[UploadFile] = None , content: str = Form(...), category: Optional[CategoryEnum] = Form(...),
             current_user: UserInfoBase = Depends(get_current_user), db: Session = Depends(get_db)):
     
     path = photo_upload(photo)

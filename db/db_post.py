@@ -127,18 +127,13 @@ def delete_like_post(post_id: int, current_user: UserInfoBase, db: Session):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                     detail=f"Not Exist Post")
         
-    db_post = db.query(Post).filter(Post.author_id == current_user.id).first()
-    if not db_post:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail=f"Not Auth User")
-        
     like_exist = db.query(Like).filter(Like.post_id == post_id).filter(Like.user_id == current_user.id)
     if not like_exist.first():
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                    detail=f"Not Exist Like")
+                    detail=f"Like Not Exist")
     db_post.like_count = db.query(Like).filter(Like.post_id == post_id).count()
     db_post.like_count -= 1
     db.add(db_post)
     
-    like_exist.delete()
+    like_exist.delete(synchronize_session=False)
     db.commit()     
