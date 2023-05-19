@@ -65,7 +65,7 @@ def register_post(post: PostDisplay, current_user: UserInfoBase, db:Session):
 def update_post(id: int, post: PostUpdate, current_user: UserInfoBase, db:Session):
     db_post = db.query(Post).filter(Post.author_id == current_user.id).first()
     if not db_post:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                     detail=f"Not Auth User")
     db_post = db.query(Post).filter(Post.id == id).first()
     if not db_post:
@@ -85,7 +85,7 @@ def update_post(id: int, post: PostUpdate, current_user: UserInfoBase, db:Sessio
 def delete_post(id: int, current_user: UserInfoBase, db: Session):
     db_post = db.query(Post).filter(Post.author_id == current_user.id).first()
     if not db_post:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                     detail=f"Not Auth User")
         
     delete_post = db.query(Post).filter(Post.type == 'lend').filter(Post.id == id)
@@ -103,7 +103,7 @@ def like_post(post_id: int, current_user: UserInfoBase, db: Session):
                     detail=f"Not Exist Post")
     
     if db_post.author_id == current_user.id:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                     detail=f"You can't like your post!")
         
     like_exist = db.query(Like).filter(Like.post_id == post_id).filter(Like.user_id == current_user.id)
