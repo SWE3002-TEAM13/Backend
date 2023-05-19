@@ -19,12 +19,18 @@ def get_post(type: str, search: str, current_user: Optional[UserInfoBase] | None
     for post in postlist:
         author = db.query(User).filter(post.author_id == User.id).first()
         post.nickname = author.nickname
-    postdisplay = postlist
-    if current_user:
-        for post in postlist:
+
+    for post in postlist:
+        if current_user:
             isliked = db.query(Like).filter(Like.post_id == post.id, Like.user_id == current_user.id).first()
             if not isliked: post.islike = False
             else: post.islike = True
+        else: post.islike = False      
+
+        
+    postdisplay = postlist
+    
+    if current_user:
         postdisplay = []
         for post in postlist:
             isblocked = db.query(BlockList).filter(BlockList.block_id == post.author_id, BlockList.user_id == current_user.id).first()
@@ -38,6 +44,7 @@ def register_post(post: PostDisplay, current_user: UserInfoBase, db:Session):
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                     detail=f"Not Valid User")
+
     new_post=Post(type = post.type,                 
                   status = post.status,     
                   title = post.title,

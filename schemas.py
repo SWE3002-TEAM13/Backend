@@ -67,9 +67,26 @@ class PostUpdate(BaseModel):
     photo : str
     content : str
     updated_at : datetime
-    category: CategoryEnum
+    category: Optional[CategoryEnum]
     class Config():
         orm_mode = True
+
+
+class PostCreateModel(BaseModel):
+    type: PostType
+    title : str
+    status : PostStatusEnum
+    price : int
+    photo : str
+    content : str
+    like_count : int
+    created_at : datetime
+    updated_at : datetime
+    nickname : str
+    category: Optional[CategoryEnum]
+    class Config():
+        orm_mode = True
+       
 
 class PostDisplay(BaseModel):
     id: int
@@ -83,7 +100,7 @@ class PostDisplay(BaseModel):
     created_at : datetime
     updated_at : datetime
     nickname : str
-    category: CategoryEnum
+    category: Optional[CategoryEnum]
     class Config():
         orm_mode = True
        

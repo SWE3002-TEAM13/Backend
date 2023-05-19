@@ -11,7 +11,7 @@ from db.database import get_db
 from fastapi import APIRouter, Depends, Form, UploadFile, File
 from typing import Optional
 from db.models import Post, User
-from schemas import UserInfoBase, PostDisplay, PostUpdate
+from schemas import PostCreateModel, UserInfoBase, PostDisplay, PostUpdate
 from db import db_post
 
 router = APIRouter(
@@ -80,17 +80,18 @@ def getPostInfo(id: int, db: Session = Depends(get_db)):
 
 
 @router.post('/')
-async def register(type: PostType = Form(...), title: str = Form(...), status: PostStatusEnum = Form(...), price: int = Form(...),
-            photo: Optional[UploadFile] = None , content: str = Form(...), category: CategoryEnum = Form(...),
+async def register(type: str = Form(...), title: str = Form(...), status: str = Form(...), price: int = Form(...),
+            photo: Optional[UploadFile] = None , content: str = Form(...), category: str = Form(...) ,
             current_user: UserInfoBase = Depends(get_current_user), db: Session = Depends(get_db)):
+    
     path = photo_upload(photo)
-    post = PostDisplay(type=type, title=title, status=status, price=price, photo=path, content=content, like_count=0, 
+    post = PostCreateModel(type=type, title=title, status=status, price=price, photo=path, content=content, like_count=0, 
                        created_at=datetime.now(), updated_at=datetime.now(), nickname=current_user.nickname, category=category)
     return db_post.register_post(post, current_user, db)
 
 @router.put('/{id}')
 def updatePost(id: int, type: PostType = Form(...), title: str = Form(...), status: PostStatusEnum = Form(...), price: int = Form(...),
-            photo: Optional[UploadFile] = None , content: str = Form(...), category: CategoryEnum = Form(...), 
+            photo: Optional[UploadFile] = None , content: str = Form(...), category: Optional[CategoryEnum] = Form(...), 
             current_user: UserInfoBase = Depends(get_current_user), db: Session = Depends(get_db)):
     path = photo_upload(photo)
     post = PostUpdate(type=type, title=title, status=status, price=price, photo=path, content=content, 
