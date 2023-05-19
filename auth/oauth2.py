@@ -57,8 +57,8 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     return verify_token(token, credentials_exception, db)
 
 def get_current_user_otherwise(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
-    
-    if not token:
+
+    if not token or token == 'null':
         return None
     
     credentials_exception = HTTPException(

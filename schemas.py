@@ -99,6 +99,7 @@ class PostDisplay(BaseModel):
     like_count : int
     created_at : datetime
     updated_at : datetime
+    islike : bool
     nickname : str
     category: Optional[CategoryEnum]
     class Config():

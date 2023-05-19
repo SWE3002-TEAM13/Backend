@@ -5,7 +5,7 @@ from schemas import PostDisplay, UserInfoBase, PostUpdate
 from db.models import BlockList, Post, User, Like
 from fastapi import HTTPException, status
 
-def get_post(type: str, search: str, current_user: Optional[UserInfoBase] | None, db:Session):
+def get_post(type: str, search: str, current_user: UserInfoBase | None, db:Session):
     if search:
         search = '%%{}%%'.format(search)
         postlist = db.query(Post).filter(Post.type == type)\
@@ -19,7 +19,7 @@ def get_post(type: str, search: str, current_user: Optional[UserInfoBase] | None
     for post in postlist:
         author = db.query(User).filter(post.author_id == User.id).first()
         post.nickname = author.nickname
-
+        
     for post in postlist:
         if current_user:
             isliked = db.query(Like).filter(Like.post_id == post.id, Like.user_id == current_user.id).first()

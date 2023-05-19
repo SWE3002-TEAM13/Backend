@@ -117,26 +117,43 @@ def getLikeList(current_user: UserInfoBase, db: Session):
     for like in likelist:
         user = db.query(User).filter(User.id == like.author_id).first()
         like.nickname = user.nickname
+        like.islike = True
     return likelist
 
-def getRentList(id: int, db: Session):
+def getRentList(id: int, id_: int, db: Session):
     rentlist = db.query(Post).filter(Post.author_id == id, Post.type == "rent").all()
     for rent in rentlist:
         user = db.query(User).filter(User.id == rent.author_id).first()
+        if id_:
+            isliked = db.query(Like).filter(Like.post_id == rent.id, Like.user_id == id_).first()
+            if not isliked: rent.islike = False
+            else: rent.islike = True
+        else: rent.islike = False
         rent.nickname = user.nickname
+        
     return rentlist
 
-def getLendList(id: int, db: Session):
+def getLendList(id: int, id_: int, db: Session):
     lendlist = db.query(Post).filter(Post.author_id == id, Post.type == "lend").all()
     for lend in lendlist:
         user = db.query(User).filter(User.id == lend.author_id).first()
+        if id_:
+            isliked = db.query(Like).filter(Like.post_id == lend.id, Like.user_id == id_).first()
+            if not isliked: lend.islike = False
+            else: lend.islike = True
+        else: lend.islike = False
         lend.nickname = user.nickname
     return lendlist
 
-def getShareList(id: int, db: Session):
+def getShareList(id: int, id_: int, db: Session):
     sharelist = db.query(Post).filter(Post.author_id == id, Post.type == "share").all()
     for share in sharelist:
         user = db.query(User).filter(User.id == share.author_id).first()
+        if id_:
+            isliked = db.query(Like).filter(Like.post_id == share.id, Like.user_id == id_).first()
+            if not isliked: share.islike = False
+            else: share.islike = True
+        else: share.islike = False
         share.nickname = user.nickname
     return sharelist
 

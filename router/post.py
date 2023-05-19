@@ -54,6 +54,7 @@ def photo_upload(photo: UploadFile = File(...)):
 
 @router.get('/')
 def get_post_list(type: str, search: Optional[str] = None, current_user = Depends(get_current_user_otherwise), db: Session = Depends(get_db)):
+    print(current_user)
     posts = db_post.get_post(type, search, current_user, db)
 
     return posts
@@ -64,7 +65,7 @@ def getLandingPost(current_user = Depends(get_current_user_otherwise), db: Sessi
     lendList = db_post.get_post("lend", "", current_user, db)
     shareList = db_post.get_post("share", "", current_user, db)
 
-    return {"rentList" : rentList[-1:-5:-1], "lendList" : lendList[-1:-5:-1], "shareList" : shareList[-1:-5:-1]}
+    return {"rentList" : rentList[-1:-4:-1], "lendList" : lendList[-1:-4:-1], "shareList" : shareList[-1:-4:-1]}
 
 
 @router.get('/{id}')
@@ -73,7 +74,7 @@ def getPostInfo(id: int, current_user = Depends(get_current_user_otherwise), db:
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                     detail=f"Not Exist Post")
-    print(current_user)
+    
     if current_user:
         isliked = db.query(Like).filter(Like.post_id == post.id, Like.user_id == current_user.id).first()
         

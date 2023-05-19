@@ -5,7 +5,7 @@ import smtplib
 from typing import Optional
 
 from dotenv import load_dotenv
-from auth.oauth2 import get_current_user
+from auth.oauth2 import get_current_user, get_current_user_otherwise
 from db.database import get_db
 from fastapi import APIRouter, BackgroundTasks, Depends, Request, UploadFile, File, Form, HTTPException, status
 from db.hash import Hash
@@ -94,28 +94,32 @@ def getProfile(current_user: UserInfoBase = Depends(get_current_user), db: Sessi
             created_at=created_at
         ))
     like_list = db_user.getLikeList(current_user, db)
-    rent_list = db_user.getRentList(current_user.id, db)
-    lend_list = db_user.getLendList(current_user.id, db)
-    share_list = db_user.getShareList(current_user.id, db)
+    rent_list = db_user.getRentList(current_user.id, current_user.id, db)
+    lend_list = db_user.getLendList(current_user.id, current_user.id, db)
+    share_list = db_user.getShareList(current_user.id, current_user.id, db)
     
     return {"profile" : profile, "blocklist": block_list_display, "likelist" : like_list,  "rentlist": rent_list, "lendlist" : lend_list, "share_list": share_list}
 
 @router.get('/me')
-def getMyUserId(current_user: UserInfoBase = Depends(get_current_user)):
+def getMyUserId(current_user: UserInfoBase = Depends(get_current_user_otherwise)):
     
-    return {"id" : current_user.id, "nickname" :current_user.nickname}
-    
+    if current_user: return {"id" : current_user.id, "nickname" :current_user.nickname}
+    else: return None
 
 @router.get('/profile/{id}', response_model= OtherProfileBase)
-def getProfileInfo(id: int, db: Session = Depends(get_db)):
-    
+def getProfileInfo(id: int, current_user: UserInfoBase = Depends(get_current_user_otherwise), db: Session = Depends(get_db)):
+
     profile = db_user.getUser(id, db)
     if profile.loc: profile.loc_str="자연과학캠퍼스(율전)"
     else: profile.loc_str="인문사회과학캠퍼스(명륜)"
-
-    rent_list = db_user.getRentList(id, db)
-    lend_list = db_user.getLendList(id, db)
-    share_list = db_user.getShareList(id, db)
+    if current_user:
+        rent_list = db_user.getRentList(id, current_user.id, db)
+        lend_list = db_user.getLendList(id, current_user.id, db)
+        share_list = db_user.getShareList(id, current_user.id, db)
+    else:
+        rent_list = db_user.getRentList(id, None, db)
+        lend_list = db_user.getLendList(id, None, db)
+        share_list = db_user.getShareList(id, None, db)
     
     return {"profile" : profile, "rentlist": rent_list, "lendlist" : lend_list, "share_list": share_list}
 
