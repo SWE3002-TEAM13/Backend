@@ -33,7 +33,7 @@ async def send_email(to_email, username, base_url, verification_token):
 
     msg = MIMEMultipart()
     body = f'<html><body><p>해당 링크를 눌러 회원가입을 완료하세요!:\
-             <a href="http://127.0.0.1:3000/verify?token={verification_token}&username={username}">{base_url}verify?token={verification_token}&username={username}</a></p></body></html>'
+             <a href="http://localhost:3000/verify?token={verification_token}&username={username}">http://localhost:3000/verify?token={verification_token}&username={username}</a></p></body></html>'
 
     msg['From'] = from_email
     msg['To'] = to_email

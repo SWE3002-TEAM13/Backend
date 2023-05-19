@@ -114,30 +114,30 @@ def getBlockList(current_user: UserInfoBase, db: Session):
 
 def getLikeList(current_user: UserInfoBase, db: Session):
     likelist = db.query(Post).join(Like, Post.id == Like.post_id).filter(Like.user_id == current_user.id).all()
-    for list in likelist:
-        user = db.query(User).filter(User.id == list.id).first()
-        list.nickname = user.nickname
+    for like in likelist:
+        user = db.query(User).filter(User.id == like.author_id).first()
+        like.nickname = user.nickname
     return likelist
 
 def getRentList(id: int, db: Session):
     rentlist = db.query(Post).filter(Post.author_id == id, Post.type == "rent").all()
-    for list in rentlist:
-        user = db.query(User).filter(User.id == list.id).first()
-        list.nickname = user.nickname
+    for rent in rentlist:
+        user = db.query(User).filter(User.id == rent.author_id).first()
+        rent.nickname = user.nickname
     return rentlist
 
 def getLendList(id: int, db: Session):
     lendlist = db.query(Post).filter(Post.author_id == id, Post.type == "lend").all()
-    for list in lendlist:
-        user = db.query(User).filter(User.id == list.id).first()
-        list.nickname = user.nickname
+    for lend in lendlist:
+        user = db.query(User).filter(User.id == lend.author_id).first()
+        lend.nickname = user.nickname
     return lendlist
 
 def getShareList(id: int, db: Session):
     sharelist = db.query(Post).filter(Post.author_id == id, Post.type == "share").all()
-    for list in sharelist:
-        user = db.query(User).filter(User.id == list.id).first()
-        list.nickname = user.nickname
+    for share in sharelist:
+        user = db.query(User).filter(User.id == share.author_id).first()
+        share.nickname = user.nickname
     return sharelist
 
 def createBlock(id: int, current_user: UserInfoBase, db: Session):
@@ -145,6 +145,10 @@ def createBlock(id: int, current_user: UserInfoBase, db: Session):
     if not block_user or id == current_user.id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail=f"Not valid id")
+    already_blocked = db.query(BlockList).filter(BlockList.block_id == id, BlockList.user_id == current_user.id).first()
+    if already_blocked:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail=f"Already Blocked!")
     new_block = BlockList(user_id = current_user.id, block_id = id)
     db.add(new_block)
     db.commit()
