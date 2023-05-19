@@ -10,7 +10,7 @@ from auth.oauth2 import get_current_user, get_current_user_otherwise
 from db.database import get_db
 from fastapi import APIRouter, Depends, Form, UploadFile, File
 from typing import Optional
-from db.models import Post, User
+from db.models import Like, Post, User
 from schemas import PostCreateModel, UserInfoBase, PostDisplay, PostUpdate
 from db import db_post
 
@@ -68,15 +68,19 @@ def getLandingPost(current_user = Depends(get_current_user_otherwise), db: Sessi
 
 
 @router.get('/{id}')
-def getPostInfo(id: int, db: Session = Depends(get_db)):
-    postinfo = db.query(Post).filter(Post.id == id).first()
-    if not postinfo:
+def getPostInfo(id: int, current_user = Depends(get_current_user_otherwise), db: Session = Depends(get_db)):
+    post = db.query(Post).filter(Post.id == id).first()
+    if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                     detail=f"Not Exist Post")
-
-    author = db.query(User).filter(postinfo.author_id == User.id).first()
-    postinfo.nickname = author.nickname
-    return postinfo
+    if current_user:
+        isliked = db.query(Like).filter(Like.post_id == post.id, Like.user_id == current_user.id).first()
+        if not isliked: post.islike = False
+        else: post.islike = True
+    else: post.islike = False
+    author = db.query(User).filter(post.author_id == User.id).first()
+    post.nickname = author.nickname
+    return post
 
 
 @router.post('/')
