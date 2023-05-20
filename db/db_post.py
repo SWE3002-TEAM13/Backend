@@ -4,6 +4,12 @@ from sqlalchemy.orm.session import Session
 from schemas import PostDisplay, UserInfoBase, PostUpdate
 from db.models import BlockList, Post, User, Like
 from fastapi import HTTPException, status
+from enum import Enum
+
+class PostType(str, Enum):
+    rent = "rent"
+    lend = "lend"
+    share = "share"
 
 def get_post(type: str, search: str, current_user: UserInfoBase | None, db:Session):
     if search:
@@ -44,7 +50,16 @@ def register_post(post: PostDisplay, current_user: UserInfoBase, db:Session):
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                     detail=f"Not Valid User")
-
+    
+    if post.type == PostType.share:
+        if post.price != 0:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                    detail=f"Share Post price should be 0!")    
+    else:
+        if post.price <= 0:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                    detail=f"Price should be more than 0!")
+    
     new_post=Post(type = post.type,                 
                   status = post.status,     
                   title = post.title,
@@ -71,6 +86,16 @@ def update_post(id: int, post: PostUpdate, current_user: UserInfoBase, db:Sessio
     if not db_post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                     detail=f"Not Exist Post")
+        
+    if post.type == PostType.share:
+        if post.price != 0:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                    detail=f"Share Post price should be 0!")    
+    else:
+        if post.price <= 0:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                    detail=f"Price should be more than 0!")
+            
     db_post.type = post.type
     db_post.title = post.title
     db_post.status = post.status
@@ -88,12 +113,12 @@ def delete_post(id: int, current_user: UserInfoBase, db: Session):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                     detail=f"Not Auth User")
         
-    delete_post = db.query(Post).filter(Post.type == 'lend').filter(Post.id == id)
+    delete_post = db.query(Post).filter(Post.id == id)
     if not delete_post.first():
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                     detail=f"Not Exist Post")
     
-    delete_post.delete()
+    delete_post.delete(synchronize_session=False)
     db.commit()
     
 def like_post(post_id: int, current_user: UserInfoBase, db: Session):
